@@ -117,7 +117,7 @@ function renderVerified(cert){
         <div class="cert-meta">
           <div class="label">Registered Product</div>
           <p class="name">${cert.product_name}</p>
-          <div class="sku">${cert.sku}</div>
+          <div class="sku">${(cert.skus || []).join(' · ')}</div>
         </div>
         <div class="stamp verified"><div class="stamp-text">Verified<br>Genuine</div></div>
       </div>
