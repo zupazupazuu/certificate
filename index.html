@@ -411,6 +411,9 @@
 </div>
 
 <script>
+/* ============================================================
+   TRANSLATIONS
+   ============================================================ */
 const I18N = {
   id: {
     pageTitle: "Verifikasi Sertifikat",
@@ -428,9 +431,12 @@ const I18N = {
     certOnFile: "Sertifikat tersimpan · Pencarian Registri",
     viewFullSize: "Lihat ukuran penuh ↗",
     stampInProcess: "Dalam<br>Proses",
-    notFoundTitle: "Sertifikat sedang dalam proses",
-    notFoundBody: "Sertifikat untuk barang ini belum diterbitkan. Anda dapat mencetak sertifikat sendiri seharga <strong>Rp99.000/sertifikat</strong> — hubungi kami di WhatsApp untuk mengaturnya.",
+    pendingTitle: "Sertifikat sedang diproses",
+    pendingBody: "SKU ini sudah terdaftar, namun foto sertifikatnya belum diunggah. Anda dapat mencetak sertifikat sendiri seharga <strong>Rp99.000/sertifikat</strong> — hubungi kami di WhatsApp untuk mengaturnya.",
     whatsappBtn: "Hubungi kami di WhatsApp",
+    stampNotFound: "Tidak<br>Ditemukan",
+    notFoundTitle: "SKU tidak ditemukan",
+    notFoundBody: "Periksa kembali SKU pada barang Anda dan pastikan penulisannya sama persis.",
     certAlt: (name) => `Sertifikat keaslian untuk ${name}`
   },
   en: {
@@ -449,9 +455,12 @@ const I18N = {
     certOnFile: "Certificate on file · Registry Lookup",
     viewFullSize: "View full size ↗",
     stampInProcess: "In<br>Process",
-    notFoundTitle: "Certificate still in process",
-    notFoundBody: "This item's certificate hasn't been issued yet. You can print your own certificate for <strong>Rp99.000/certificate</strong> — contact us on WhatsApp to arrange it.",
+    pendingTitle: "Certificate is being processed",
+    pendingBody: "This SKU is registered, but its certificate photo hasn't been uploaded yet. You can print your own certificate for <strong>Rp99.000/certificate</strong> — contact us on WhatsApp to arrange it.",
     whatsappBtn: "Contact us on WhatsApp",
+    stampNotFound: "Not<br>Found",
+    notFoundTitle: "SKU not found",
+    notFoundBody: "Double-check the SKU on your item and make sure it's typed exactly as printed.",
     certAlt: (name) => `Certificate of authenticity for ${name}`
   }
 };
@@ -513,16 +522,29 @@ function renderVerified(cert){
   document.getElementById('expandLink').addEventListener('click', () => openLightbox(cert.photo_url));
 }
 
-function renderNotFound(){
+function renderPending(){
   const s = t();
   resultArea.innerHTML = `
     <div class="not-found">
       <div class="stamp void" style="margin:0 auto 18px;">
         <div class="stamp-text">${s.stampInProcess}</div>
       </div>
+      <h2>${s.pendingTitle}</h2>
+      <p>${s.pendingBody}</p>
+      <a class="whatsapp-btn" href="${WHATSAPP_URL}" target="_blank" rel="noopener">${s.whatsappBtn}</a>
+    </div>
+  `;
+}
+
+function renderNotFound(){
+  const s = t();
+  resultArea.innerHTML = `
+    <div class="not-found">
+      <div class="stamp void" style="margin:0 auto 18px;">
+        <div class="stamp-text">${s.stampNotFound}</div>
+      </div>
       <h2>${s.notFoundTitle}</h2>
       <p>${s.notFoundBody}</p>
-      <a class="whatsapp-btn" href="${WHATSAPP_URL}" target="_blank" rel="noopener">${s.whatsappBtn}</a>
     </div>
   `;
 }
@@ -551,9 +573,12 @@ async function doSearch(){
   if(!normalize(q)){ return; }
   renderSearching();
   const cert = await findCertificate(q);
-  if(cert){
+  if(cert && cert.photo_url){
     lastState = { type: "verified", cert };
     renderVerified(cert);
+  } else if(cert && !cert.photo_url){
+    lastState = { type: "pending" };
+    renderPending();
   } else {
     lastState = { type: "notfound" };
     renderNotFound();
@@ -569,6 +594,9 @@ lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
 btn.addEventListener('click', doSearch);
 input.addEventListener('keydown', e => { if(e.key === 'Enter') doSearch(); });
 
+/* ============================================================
+   LANGUAGE SWITCHING
+   ============================================================ */
 function applyLanguage(lang){
   currentLang = lang;
   const s = t();
@@ -587,6 +615,8 @@ function applyLanguage(lang){
 
   if(lastState.type === "verified"){
     renderVerified(lastState.cert);
+  } else if(lastState.type === "pending"){
+    renderPending();
   } else if(lastState.type === "notfound"){
     renderNotFound();
   } else {
@@ -599,6 +629,6 @@ langEnBtn.addEventListener('click', () => applyLanguage('en'));
 
 applyLanguage(currentLang);
 </script>
-
+  
 </body>
 </html>
