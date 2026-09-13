@@ -459,7 +459,7 @@ const I18N = {
     viewFullSize: "Lihat ukuran penuh ↗",
     stampInProcess: "Dalam<br>Proses",
     pendingTitle: "Sertifikat sedang diproses",
-    pendingBody: "SKU sedang proses pengetesan dan upload sertifikat. Anda dapat mencetak sertifikat sendiri seharga <strong>Rp99.000/sertifikat</strong> — hubungi kami di WhatsApp untuk mengaturnya. Langsung dikirim ke rumah anda. Ongkos kirim ditanggung penerima.",
+    pendingBody: "Mohon maaf, sertifikat masih dalam proses.",
     whatsappBtn: "Hubungi kami di WhatsApp",
     waTemplate: (sku) => `Saya ingin mencetak sertifikat (${sku}) Rp99.000. Ini nama, alamat dan no. HP saya.\nNama: \nAlamat: \nNo. HP: `,
     stampNotFound: "Tidak<br>Ditemukan",
@@ -484,7 +484,7 @@ const I18N = {
     viewFullSize: "View full size ↗",
     stampInProcess: "In<br>Process",
     pendingTitle: "Certificate is being processed",
-    pendingBody: "This SKU is being tested and its certificate is being uploaded. You can print your own certificate for <strong>Rp99.000/certificate</strong> — contact us on WhatsApp to arrange it. It will be delivered straight to your home. Shipping is paid by the recipient.",
+    pendingBody: "Sorry, the certificate is still being processed.",
     whatsappBtn: "Contact us on WhatsApp",
     waTemplate: (sku) => `I'd like to print certificate (${sku}) for Rp99,000. Here's my name, address, and phone number.\nName: \nAddress: \nPhone: `,
     stampNotFound: "Not<br>Found",
@@ -551,10 +551,8 @@ function renderVerified(cert){
   document.getElementById('expandLink').addEventListener('click', () => openLightbox(cert.photo_url));
 }
 
-function renderPending(sku){
+function renderPending(){
   const s = t();
-  const waMessage = s.waTemplate(sku || '');
-  const waLink = `${WHATSAPP_URL}?text=${encodeURIComponent(waMessage)}`;
   resultArea.innerHTML = `
     <div class="not-found">
       <div class="stamp void" style="margin:0 auto 18px;">
@@ -562,7 +560,6 @@ function renderPending(sku){
       </div>
       <h2>${s.pendingTitle}</h2>
       <p>${s.pendingBody}</p>
-      <a class="whatsapp-btn" href="${waLink}" target="_blank" rel="noopener">${s.whatsappBtn}</a>
     </div>
   `;
 }
@@ -607,8 +604,8 @@ async function doSearch(){
     lastState = { type: "verified", cert };
     renderVerified(cert);
   } else if(cert && !cert.photo_url){
-    lastState = { type: "pending", sku: q.trim() };
-    renderPending(q.trim());
+    lastState = { type: "pending" };
+    renderPending();
   } else {
     lastState = { type: "notfound" };
     renderNotFound();
@@ -647,7 +644,7 @@ function applyLanguage(lang){
   if(lastState.type === "verified"){
     renderVerified(lastState.cert);
   } else if(lastState.type === "pending"){
-    renderPending(lastState.sku);
+    renderPending();
   } else if(lastState.type === "notfound"){
     renderNotFound();
   } else {
